@@ -64,10 +64,6 @@ function parseEuro(s: string | undefined): number | null {
   return parseInt(m[1].replace(/\./g, ''), 10);
 }
 
-function isDividerRow(cells: string[]): boolean {
-  return cells.every((c) => c.trim() === '' || c.trim() === ':-:');
-}
-
 export function parseSheetToProducts(csv: string): Product[] {
   const rows = parseCsv(csv);
   const products: Product[] = [];
@@ -75,49 +71,51 @@ export function parseSheetToProducts(csv: string): Product[] {
 
   // Le tabelle nel foglio sono separate da righe vuote; contiamo i blocchi
   // di intestazione ("NOME PRODOTTO") per assegnare la categoria corretta.
+  // Le colonne utili (prezzo scontato, prezzo di listino, % sconto) vengono
+  // individuate leggendo il testo dell'intestazione di OGNI blocco, invece
+  // di assumere un numero fisso di colonne: alcuni blocchi hanno una colonna
+  // "LINK PRODOTTO" in più o in meno rispetto ad altri.
   let tableIndex = -1;
   let category = CATEGORIES[0];
-  let lastRowWasEmpty = true;
+  let cols = { code: 1, avail: 2, disc: 6, listIncl: 5, pct: 7 };
 
   for (const cells of rows) {
     const trimmed = cells.map((c) => (c || '').trim());
     const nonEmpty = trimmed.filter((c) => c !== '');
 
-    if (nonEmpty.length === 0) {
-      lastRowWasEmpty = true;
-      continue;
-    }
+    if (nonEmpty.length === 0) continue;
 
     if (trimmed[0] === 'NOME PRODOTTO') {
       tableIndex++;
       category = CATEGORIES[tableIndex] || CATEGORIES[CATEGORIES.length - 1];
-      lastRowWasEmpty = false;
+
+      const upper = trimmed.map((c) => c.toUpperCase());
+      const discIdx = upper.findIndex((c) => c.includes('SCONT'));
+      const listInclIdx = upper.findIndex((c, i) => c.includes('IVA INCLUSA') && i !== discIdx && !c.includes('SCONT'));
+      cols = {
+        code: 1,
+        avail: 2,
+        disc: discIdx > -1 ? discIdx : 6,
+        listIncl: listInclIdx > -1 ? listInclIdx : 5,
+        pct: (discIdx > -1 ? discIdx : 6) + 1,
+      };
       continue;
     }
 
     // riga di sottotitolo sezione (es. "ESPOSIZIONE SHOWROOM BREO ...")
-    if (nonEmpty.length === 1) {
-      lastRowWasEmpty = false;
-      continue;
-    }
+    if (nonEmpty.length === 1) continue;
 
     const name = trimmed[0];
     if (!name) continue;
 
-    const code = trimmed[1] || '';
-    const availability = trimmed[2] || '';
-
-    // Le prime 9 colonne includono un LINK PRODOTTO in più rispetto alle altre tabelle
-    const hasLinkCol = tableIndex === 0;
-    const discountStr = hasLinkCol ? trimmed[7] : trimmed[6];
-    const discountPctRaw = hasLinkCol ? trimmed[8] : trimmed[7];
-    const listInclStr = hasLinkCol ? trimmed[6] : trimmed[5];
+    const code = trimmed[cols.code] || '';
+    const availability = trimmed[cols.avail] || '';
+    const discountStr = trimmed[cols.disc];
+    const discountPctRaw = trimmed[cols.pct];
+    const listInclStr = trimmed[cols.listIncl];
 
     const discountPrice = parseEuro(discountStr);
-    if (discountPrice === null) {
-      lastRowWasEmpty = false;
-      continue;
-    }
+    if (discountPrice === null) continue;
 
     let brand = name;
     let model = name;
@@ -155,7 +153,6 @@ export function parseSheetToProducts(csv: string): Product[] {
       listPrice,
       discountPercent,
     });
-    lastRowWasEmpty = false;
   }
 
   return products;

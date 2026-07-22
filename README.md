@@ -49,7 +49,7 @@ oppure semplicemente chiedermi di aggiornarlo.
 2. Vai su **Sviluppatori → Chiavi API** e copia la **Chiave segreta** (in modalità test per
    provare, poi la chiave live quando sei pronto) → mettila in `STRIPE_SECRET_KEY`.
 3. Per le notifiche d'ordine: **Sviluppatori → Webhook → Aggiungi endpoint**
-   - URL: `https://shop.eleluci.it/api/webhook/stripe`
+   - URL: `https://outlet.eleluci.it/api/webhook/stripe`
    - Evento da ascoltare: `checkout.session.completed`
    - Copia il "Signing secret" → mettilo in `STRIPE_WEBHOOK_SECRET`
 4. Il checkout è già impostato per accettare carte, con raccolta indirizzo di spedizione
@@ -71,7 +71,7 @@ Senza questa configurazione il sito funziona comunque: gli ordini restano visibi
 dashboard Stripe, e le richieste di contatto vengono comunque registrate nei log del server
 (visibili su Vercel → progetto → tab "Logs").
 
-## 5. Deploy su Vercel con dominio shop.eleluci.it
+## 5. Deploy su Vercel con dominio outlet.eleluci.it
 
 1. Crea un repository GitHub (es. `marcogiana/lampade-expo-shop`) e pusha questo progetto:
    ```bash
@@ -87,7 +87,7 @@ dashboard Stripe, e le richieste di contatto vengono comunque registrate nei log
 3. In **Settings → Environment Variables** inserisci tutte le variabili di `.env.example`
    con i valori reali.
 4. Deploy.
-5. In **Settings → Domains** aggiungi `shop.eleluci.it`.
+5. In **Settings → Domains** aggiungi `outlet.eleluci.it`.
 6. Nel provider DNS di eleluci.it, crea un record **CNAME**:
    - Host: `shop`
    - Valore: `cname.vercel-dns.com`
