@@ -5,11 +5,15 @@ const SHEET_ID = process.env.PRICELIST_SHEET_ID || '1YLuMvGXD5uZEpQ2Bgo1DI9dX580
 
 // Il listino promozionale è diviso in 4 schede (tab) separate all'interno dello
 // stesso file Google Sheets. Ogni scheda corrisponde a una categoria del sito.
-const TABS: { name: string; category: string }[] = [
-  { name: 'SOSP', category: 'Sospensioni e plafoniere' },
-  { name: 'APPLIQUE', category: 'Applique' },
-  { name: 'TAVOLO', category: 'Lampade da tavolo' },
-  { name: 'TERRA', category: 'Lampade da terra' },
+// Si usa il gid (identificativo numerico della scheda, visibile nell'URL come
+// #gid=...) invece del nome, perché il lookup per nome di Google Sheets è
+// case-sensitive e in caso di mancata corrispondenza restituisce silenziosamente
+// la prima scheda invece di dare errore.
+const TABS: { gid: string; category: string }[] = [
+  { gid: '0', category: 'Sospensioni e plafoniere' },
+  { gid: '1219695306', category: 'Applique' },
+  { gid: '470800826', category: 'Lampade da tavolo' },
+  { gid: '1721492760', category: 'Lampade da terra' },
 ];
 
 function parseCsv(text: string): string[][] {
@@ -153,10 +157,10 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
   return products;
 }
 
-async function fetchTabCsv(tabName: string): Promise<string> {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+async function fetchTabCsv(gid: string): Promise<string> {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
   const res = await fetch(url, { next: { revalidate: 300 } });
-  if (!res.ok) throw new Error(`Lettura scheda "${tabName}" fallita: ${res.status}`);
+  if (!res.ok) throw new Error(`Lettura scheda gid=${gid} fallita: ${res.status}`);
   return res.text();
 }
 
@@ -184,7 +188,7 @@ export async function fetchLiveProducts(): Promise<Product[]> {
   try {
     const results = await Promise.all(
       TABS.map(async (tab) => {
-        const csv = await fetchTabCsv(tab.name);
+        const csv = await fetchTabCsv(tab.gid);
         return parseTabToProducts(csv, tab.category);
       })
     );
