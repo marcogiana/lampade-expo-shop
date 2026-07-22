@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::selection {
+  background: #C6A05C;
+  color: #141318;
+}
+
+* {
+  scrollbar-color: #3a3640 #1D1B21;
+}
+
+body {
+  background-color: #141318;
+  color: #F3EFE7;
+}
+
+.filament {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(198, 160, 92, 0.55), transparent);
+}
+
+.glow-dot {
+  box-shadow: 0 0 0 0 rgba(198, 160, 92, 0.6);
+  transition: box-shadow 0.4s ease, background-color 0.4s ease;
+}
+
+.card-glow:hover .glow-dot {
+  background-color: #E4C07E;
+  box-shadow: 0 0 18px 4px rgba(228, 192, 126, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
