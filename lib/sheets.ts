@@ -2,7 +2,15 @@ import type { Product } from './products';
 import fallbackData from '@/data/products.json';
 
 const SHEET_ID = process.env.PRICELIST_SHEET_ID || '1YLuMvGXD5uZEpQ2Bgo1DI9dX580AP1AdKxv1DmxlwYY';
-const CATEGORIES = ['Sospensioni e plafoniere', 'Applique', 'Lampade da tavolo', 'Lampade da terra'];
+
+// Il listino promozionale è diviso in 4 schede (tab) separate all'interno dello
+// stesso file Google Sheets. Ogni scheda corrisponde a una categoria del sito.
+const TABS: { name: string; category: string }[] = [
+  { name: 'SOSP', category: 'Sospensioni e plafoniere' },
+  { name: 'APPLIQUE', category: 'Applique' },
+  { name: 'TAVOLO', category: 'Lampade da tavolo' },
+  { name: 'TERRA', category: 'Lampade da terra' },
+];
 
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
@@ -64,20 +72,17 @@ function parseEuro(s: string | undefined): number | null {
   return parseInt(m[1].replace(/\./g, ''), 10);
 }
 
-export function parseSheetToProducts(csv: string): Product[] {
+/**
+ * Trasforma il CSV di UNA scheda in prodotti per la categoria data.
+ * Le colonne utili (prezzo scontato, prezzo di listino, % sconto) vengono
+ * individuate leggendo il testo dell'intestazione, invece di assumere un
+ * numero fisso di colonne: alcune schede hanno una colonna "LINK PRODOTTO"
+ * in più rispetto ad altre.
+ */
+export function parseTabToProducts(csv: string, category: string): Product[] {
   const rows = parseCsv(csv);
   const products: Product[] = [];
-  const seenSlugs = new Set<string>();
-
-  // Le tabelle nel foglio sono separate da righe vuote; contiamo i blocchi
-  // di intestazione ("NOME PRODOTTO") per assegnare la categoria corretta.
-  // Le colonne utili (prezzo scontato, prezzo di listino, % sconto) vengono
-  // individuate leggendo il testo dell'intestazione di OGNI blocco, invece
-  // di assumere un numero fisso di colonne: alcuni blocchi hanno una colonna
-  // "LINK PRODOTTO" in più o in meno rispetto ad altri.
-  let tableIndex = -1;
-  let category = CATEGORIES[0];
-  let cols = { code: 1, avail: 2, disc: 6, listIncl: 5, pct: 7 };
+  let cols: { code: number; avail: number; disc: number; listIncl: number; pct: number } | null = null;
 
   for (const cells of rows) {
     const trimmed = cells.map((c) => (c || '').trim());
@@ -86,9 +91,6 @@ export function parseSheetToProducts(csv: string): Product[] {
     if (nonEmpty.length === 0) continue;
 
     if (trimmed[0] === 'NOME PRODOTTO') {
-      tableIndex++;
-      category = CATEGORIES[tableIndex] || CATEGORIES[CATEGORIES.length - 1];
-
       const upper = trimmed.map((c) => c.toUpperCase());
       const discIdx = upper.findIndex((c) => c.includes('SCONT'));
       const listInclIdx = upper.findIndex((c, i) => c.includes('IVA INCLUSA') && i !== discIdx && !c.includes('SCONT'));
@@ -102,8 +104,8 @@ export function parseSheetToProducts(csv: string): Product[] {
       continue;
     }
 
-    // riga di sottotitolo sezione (es. "ESPOSIZIONE SHOWROOM BREO ...")
-    if (nonEmpty.length === 1) continue;
+    if (!cols) continue; // non abbiamo ancora incontrato l'intestazione della scheda
+    if (nonEmpty.length === 1) continue; // riga di sottotitolo sezione (es. "ESPOSIZIONE SHOWROOM BREO ...")
 
     const name = trimmed[0];
     if (!name) continue;
@@ -125,14 +127,7 @@ export function parseSheetToProducts(csv: string): Product[] {
       model = name.slice(dashIdx + 3).trim();
     }
 
-    let slug = slugify(`${brand}-${model}`);
-    let unique = slug;
-    let i = 2;
-    while (seenSlugs.has(unique)) {
-      unique = `${slug}-${i}`;
-      i++;
-    }
-    seenSlugs.add(unique);
+    const slug = slugify(`${brand}-${model}`);
 
     const pctMatch = (discountPctRaw || '').match(/(\d+)\s*%/);
     const discountPercent = pctMatch ? parseInt(pctMatch[1], 10) : null;
@@ -142,7 +137,7 @@ export function parseSheetToProducts(csv: string): Product[] {
     }
 
     products.push({
-      slug: unique,
+      slug,
       brand,
       model,
       fullName: name.replace(/\\&/g, '&').replace(/\s+/g, ' ').trim(),
@@ -158,21 +153,44 @@ export function parseSheetToProducts(csv: string): Product[] {
   return products;
 }
 
+async function fetchTabCsv(tabName: string): Promise<string> {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+  const res = await fetch(url, { next: { revalidate: 300 } });
+  if (!res.ok) throw new Error(`Lettura scheda "${tabName}" fallita: ${res.status}`);
+  return res.text();
+}
+
+function dedupeSlugs(products: Product[]): Product[] {
+  const seen = new Set<string>();
+  return products.map((p) => {
+    let slug = p.slug;
+    let i = 2;
+    while (seen.has(slug)) {
+      slug = `${p.slug}-${i}`;
+      i++;
+    }
+    seen.add(slug);
+    return slug === p.slug ? p : { ...p, slug };
+  });
+}
+
 /**
- * Recupera il catalogo prodotti. Prova a leggere in diretta il Google Sheet
- * pubblico (stesso foglio che aggiorna Marco); se il foglio non è
- * raggiungibile o non è più pubblico, usa lo snapshot salvato in
- * data/products.json così il sito non si rompe mai.
+ * Recupera il catalogo prodotti leggendo in diretta le 4 schede del Google
+ * Sheet pubblico (stesso foglio che aggiorna Marco: SOSP, APPLIQUE, TAVOLO,
+ * TERRA). Se una o più schede non sono raggiungibili, usa lo snapshot
+ * salvato in data/products.json così il sito non si rompe mai.
  */
 export async function fetchLiveProducts(): Promise<Product[]> {
   try {
-    const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv`;
-    const res = await fetch(url, { next: { revalidate: 300 } });
-    if (!res.ok) throw new Error(`Sheet fetch failed: ${res.status}`);
-    const csv = await res.text();
-    const parsed = parseSheetToProducts(csv);
-    if (parsed.length < 10) throw new Error('Parsing sospetto: troppi pochi prodotti trovati');
-    return parsed;
+    const results = await Promise.all(
+      TABS.map(async (tab) => {
+        const csv = await fetchTabCsv(tab.name);
+        return parseTabToProducts(csv, tab.category);
+      })
+    );
+    const all = dedupeSlugs(results.flat());
+    if (all.length < 10) throw new Error('Parsing sospetto: troppi pochi prodotti trovati');
+    return all;
   } catch (err) {
     console.warn('[sheets] impossibile leggere il Google Sheet live, uso lo snapshot statico:', err);
     return fallbackData as Product[];
