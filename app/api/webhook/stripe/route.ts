@@ -35,9 +35,10 @@ export async function POST(req: NextRequest) {
       try {
         const { Resend } = await import('resend');
         const resend = new Resend(process.env.RESEND_API_KEY);
+        const recipients = process.env.ORDER_NOTIFICATION_EMAIL.split(',').map((e) => e.trim()).filter(Boolean);
         await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL || 'ordini@eleluci.it',
-          to: process.env.ORDER_NOTIFICATION_EMAIL,
+          to: recipients,
           subject: `Nuovo ordine ricevuto — ${session.id}`,
           text: `Cliente: ${session.customer_details?.email || 'n/d'}\nTotale: €${((session.amount_total || 0) / 100).toFixed(2)}\nSession ID: ${session.id}\n\nVedi i dettagli completi nella dashboard Stripe.`,
         });
