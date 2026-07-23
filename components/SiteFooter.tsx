@@ -10,7 +10,7 @@ export default function SiteFooter() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/studio-luce-logo.png" alt="Studio Luce" className="h-6 w-auto" />
             <p className="mt-3 max-w-sm text-sm text-muted">
-              Pezzi di design provenienti dal nostro magazzino e showroom, venduti a prezzo scontato.
+              Lampade di design provenienti dal nostro magazzino e showroom, vendute a prezzo scontato.
               Disponibilità limitata: un pezzo, una sola vendita.
             </p>
           </div>
