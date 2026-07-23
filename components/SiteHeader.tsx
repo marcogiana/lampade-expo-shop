@@ -18,11 +18,9 @@ export default function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-ink/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <Link href="/" className="flex items-baseline gap-2">
-          <span className="font-display text-xl italic text-paper">Ele Luci</span>
-          <span className="hidden font-mono text-[10px] uppercase tracking-[0.2em] text-brass sm:inline">
-            Vendita Espositori
-          </span>
+        <Link href="/" className="flex items-center">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/studio-luce-logo.png" alt="Studio Luce" className="h-6 w-auto sm:h-7" />
         </Link>
 
         <nav className="hidden gap-7 md:flex">

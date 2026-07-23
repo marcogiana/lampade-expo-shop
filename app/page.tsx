@@ -23,13 +23,13 @@ export default async function HomePage() {
           style={{ background: 'radial-gradient(circle, rgba(198,160,92,0.35), transparent 70%)' }}
         />
         <div className="relative mx-auto max-w-6xl px-5 py-24 text-center">
-          <p className="mb-4 font-mono text-xs uppercase tracking-[0.3em] text-brass">Vendita espositori &amp; magazzino</p>
+          <p className="mb-4 font-mono text-xs uppercase tracking-[0.3em] text-brass">Selezione da magazzino e showroom</p>
           <h1 className="mx-auto max-w-3xl font-display text-4xl italic leading-tight text-paper sm:text-6xl">
             Pezzi di design, luce vera, un solo esemplare a testa.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-sm text-muted sm:text-base">
             {totalCount} lampade di {brandCount} marchi — FLOS, Artemide, Catellani&amp;Smith, Foscarini, Luceplan e altri —
-            uscite dal magazzino e dallo showroom Ele Luci, in vendita a prezzo scontato fino a esaurimento.
+            uscite dal magazzino e dallo showroom Studio Luce, in vendita a prezzo scontato fino a esaurimento.
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
             <Link

@@ -7,8 +7,9 @@ export default function SiteFooter() {
         <div className="filament mb-8" />
         <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="font-display text-lg italic text-paper">Ele Luci</p>
-            <p className="mt-2 max-w-sm text-sm text-muted">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/studio-luce-logo.png" alt="Studio Luce" className="h-6 w-auto" />
+            <p className="mt-3 max-w-sm text-sm text-muted">
               Pezzi di design provenienti dal nostro magazzino e showroom, venduti a prezzo scontato.
               Disponibilità limitata: un pezzo, una sola vendita.
             </p>
@@ -32,7 +33,7 @@ export default function SiteFooter() {
             </div>
           </div>
         </div>
-        <p className="mt-10 text-xs text-muted">© {new Date().getFullYear()} Ele Luci. Prezzi IVA inclusa, salvo diversa indicazione.</p>
+        <p className="mt-10 text-xs text-muted">© {new Date().getFullYear()} Studio Luce. Prezzi IVA inclusa, salvo diversa indicazione.</p>
       </div>
     </footer>
   );

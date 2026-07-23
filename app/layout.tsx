@@ -26,7 +26,7 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Vendita Espositori | Ele Luci',
+  title: 'Studio Luce',
   description:
     'Lampade di design FLOS, Artemide, Catellani&Smith, Foscarini e altri grandi marchi, provenienti da magazzino e showroom, con prezzo promozionale.',
 };
