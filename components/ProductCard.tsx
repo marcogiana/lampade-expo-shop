@@ -1,19 +1,35 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import type { Product } from '@/lib/products';
 import { formatEuro } from '@/lib/format';
 import { useCart } from './CartContext';
 
 export default function ProductCard({ product }: { product: Product }) {
-  const { addItem, open } = useCart();
+  const { addItem } = useCart();
+  const [imgError, setImgError] = useState(false);
+  const showImage = product.image && !imgError;
 
   return (
     <div className="card-glow group relative flex flex-col overflow-hidden rounded-xl border border-white/10 bg-surface transition hover:border-brass/40 hover:shadow-glow">
       <Link href={`/prodotti/${product.slug}`} className="block">
-        <div className="flex aspect-[4/3] items-center justify-center bg-surface2 text-muted">
-          <span className="glow-dot h-2 w-2 rounded-full bg-brass/50" />
-          <span className="sr-only">{product.fullName}</span>
+        <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-surface2 text-muted">
+          {showImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={product.image as string}
+              alt={product.fullName}
+              loading="lazy"
+              onError={() => setImgError(true)}
+              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <>
+              <span className="glow-dot h-2 w-2 rounded-full bg-brass/50" />
+              <span className="sr-only">{product.fullName}</span>
+            </>
+          )}
         </div>
       </Link>
 

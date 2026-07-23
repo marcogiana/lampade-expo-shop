@@ -4,6 +4,7 @@ import { getAllProducts, getProductBySlug } from '@/lib/products';
 import { formatEuro } from '@/lib/format';
 import AddToCartButton from '@/components/AddToCartButton';
 import ProductCard from '@/components/ProductCard';
+import ProductImage from '@/components/ProductImage';
 
 export async function generateStaticParams() {
   const products = await getAllProducts();
@@ -37,9 +38,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
       </nav>
 
       <div className="grid gap-10 md:grid-cols-2">
-        <div className="flex aspect-square items-center justify-center rounded-2xl border border-white/10 bg-surface">
-          <span className="glow-dot h-3 w-3 rounded-full bg-brass/50" />
-        </div>
+        <ProductImage src={product.image} alt={product.fullName} />
 
         <div>
           <p className="font-mono text-xs uppercase tracking-widest text-brass">{product.brand}</p>

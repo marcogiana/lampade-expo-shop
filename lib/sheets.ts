@@ -86,7 +86,7 @@ function parseEuro(s: string | undefined): number | null {
 export function parseTabToProducts(csv: string, category: string): Product[] {
   const rows = parseCsv(csv);
   const products: Product[] = [];
-  let cols: { code: number; avail: number; disc: number; listIncl: number; pct: number } | null = null;
+  let cols: { code: number; avail: number; disc: number; listIncl: number; pct: number; img: number } | null = null;
 
   for (const cells of rows) {
     const trimmed = cells.map((c) => (c || '').trim());
@@ -98,12 +98,14 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
       const upper = trimmed.map((c) => c.toUpperCase());
       const discIdx = upper.findIndex((c) => c.includes('SCONT'));
       const listInclIdx = upper.findIndex((c, i) => c.includes('IVA INCLUSA') && i !== discIdx && !c.includes('SCONT'));
+      const imgIdx = upper.findIndex((c) => c.includes('LINK PRODOTTO'));
       cols = {
         code: 1,
         avail: 2,
         disc: discIdx > -1 ? discIdx : 6,
         listIncl: listInclIdx > -1 ? listInclIdx : 5,
         pct: (discIdx > -1 ? discIdx : 6) + 1,
+        img: imgIdx,
       };
       continue;
     }
@@ -119,6 +121,7 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
     const discountStr = trimmed[cols.disc];
     const discountPctRaw = trimmed[cols.pct];
     const listInclStr = trimmed[cols.listIncl];
+    const rawImg = cols.img > -1 ? trimmed[cols.img] : '';
 
     const discountPrice = parseEuro(discountStr);
     if (discountPrice === null) continue;
@@ -140,6 +143,8 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
       listPrice = Math.round(discountPrice / (1 - discountPercent / 100));
     }
 
+    const image = rawImg && (rawImg.startsWith('http://') || rawImg.startsWith('https://') || rawImg.startsWith('data:image')) ? rawImg : null;
+
     products.push({
       slug,
       brand,
@@ -151,6 +156,7 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
       price: discountPrice,
       listPrice,
       discountPercent,
+      image,
     });
   }
 
