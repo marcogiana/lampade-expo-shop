@@ -7,8 +7,9 @@ export default function ContattiPage() {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const formEl = e.currentTarget;
     setStatus('loading');
-    const form = new FormData(e.currentTarget);
+    const form = new FormData(formEl);
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
@@ -23,7 +24,7 @@ export default function ContattiPage() {
       });
       if (!res.ok) throw new Error();
       setStatus('ok');
-      e.currentTarget.reset();
+      formEl.reset();
     } catch {
       setStatus('error');
     }
