@@ -77,6 +77,23 @@ function parseEuro(s: string | undefined): number | null {
 }
 
 /**
+ * I link di condivisione di Google Drive (es. .../file/d/ID/view?usp=sharing)
+ * puntano a una pagina di anteprima, non all'immagine stessa, quindi non
+ * funzionano in un tag <img>. Li convertiamo nel formato "thumbnail" di Drive,
+ * che restituisce l'immagine vera e propria (il vecchio formato uc?export=view
+ * è stato disabilitato da Google). Il file deve essere condiviso come
+ * "Chiunque abbia il link" per funzionare.
+ */
+function normalizeImageUrl(url: string): string {
+  if (!url.includes('drive.google.com')) return url;
+  const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (match) {
+    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+  }
+  return url;
+}
+
+/**
  * Trasforma il CSV di UNA scheda in prodotti per la categoria data.
  * Le colonne utili (prezzo scontato, prezzo di listino, % sconto) vengono
  * individuate leggendo il testo dell'intestazione, invece di assumere un
@@ -143,7 +160,7 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
       listPrice = Math.round(discountPrice / (1 - discountPercent / 100));
     }
 
-    const image = rawImg && (rawImg.startsWith('http://') || rawImg.startsWith('https://') || rawImg.startsWith('data:image')) ? rawImg : null;
+    const image = rawImg && (rawImg.startsWith('http://') || rawImg.startsWith('https://') || rawImg.startsWith('data:image')) ? normalizeImageUrl(rawImg) : null;
 
     products.push({
       slug,
