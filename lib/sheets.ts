@@ -67,6 +67,17 @@ function slugify(str: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
+// Colonna J del foglio (indice 9, fissa indipendentemente dalla struttura delle
+// altre colonne): contiene i pezzi disponibili a magazzino per quella riga.
+const STOCK_COL_INDEX = 9;
+
+function parseStock(raw: string | undefined): number | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  if (!/^\d+$/.test(trimmed)) return null;
+  return parseInt(trimmed, 10);
+}
+
 function parseEuro(s: string | undefined): number | null {
   if (!s) return null;
   s = s.trim();
@@ -139,6 +150,7 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
     const discountPctRaw = trimmed[cols.pct];
     const listInclStr = trimmed[cols.listIncl];
     const rawImg = cols.img > -1 ? trimmed[cols.img] : '';
+    const stock = parseStock(trimmed[STOCK_COL_INDEX]);
 
     const discountPrice = parseEuro(discountStr);
     if (discountPrice === null) continue;
@@ -174,6 +186,7 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
       listPrice,
       discountPercent,
       image,
+      stock,
     });
   }
 

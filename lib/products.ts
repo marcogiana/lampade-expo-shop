@@ -10,6 +10,7 @@ export type Product = {
   listPrice: number | null;
   discountPercent: number | null;
   image?: string | null;
+  stock?: number | null;
 };
 
 export const CATEGORIES = [

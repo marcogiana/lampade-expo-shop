@@ -57,22 +57,26 @@ export default async function ProductPage({ params }: { params: { slug: string }
           </div>
           <p className="mt-1 text-xs text-muted">Prezzo IVA inclusa.</p>
 
-          <dl className="mt-8 grid grid-cols-2 gap-4 border-t border-white/10 pt-6 text-sm">
+          <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-white/10 pt-6 text-sm">
             <div>
               <dt className="text-muted">Codice</dt>
               <dd className="font-mono text-paper">{product.code || '—'}</dd>
             </div>
             <div>
               <dt className="text-muted">Disponibilità</dt>
-              <dd className="text-paper">{product.availability || 'Su richiesta'}</dd>
+              <dd className="text-paper">
+                {typeof product.stock === 'number'
+                  ? product.stock > 0
+                    ? product.stock === 1
+                      ? 'Ultimo pezzo disponibile'
+                      : `${product.stock} disponibili`
+                    : 'Esaurito'
+                  : product.availability || 'Su richiesta'}
+              </dd>
             </div>
             <div>
               <dt className="text-muted">Categoria</dt>
               <dd className="text-paper">{product.category}</dd>
-            </div>
-            <div>
-              <dt className="text-muted">Quantità</dt>
-              <dd className="text-paper">Pezzo unico</dd>
             </div>
           </dl>
 
