@@ -14,6 +14,7 @@ export default function RichiestaOrdinePage() {
   const { items, total, clear } = useCart();
   const router = useRouter();
   const [customerType, setCustomerType] = useState<'privato' | 'azienda'>('privato');
+  const [shippingRequested, setShippingRequested] = useState(false);
   const [shippingDifferent, setShippingDifferent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +45,7 @@ export default function RichiestaOrdinePage() {
           zip: g('zip'),
           city: g('city'),
           province: g('province'),
+          shippingRequested,
           shippingDifferent,
           shippingAddress: g('shippingAddress'),
           shippingZip: g('shippingZip'),
@@ -207,43 +209,60 @@ export default function RichiestaOrdinePage() {
         </fieldset>
 
         <fieldset>
-          <legend className="mb-3 text-sm font-medium text-paper">Spedizione</legend>
+          <legend className="mb-3 text-sm font-medium text-paper">Spedizione (opzionale)</legend>
           <label className="flex items-center gap-2 text-sm text-muted">
             <input
               type="checkbox"
-              checked={shippingDifferent}
-              onChange={(e) => setShippingDifferent(e.target.checked)}
+              checked={shippingRequested}
+              onChange={(e) => setShippingRequested(e.target.checked)}
               className="h-4 w-4 accent-brass"
             />
-            Spedisci a un indirizzo diverso da quello di fatturazione
+            Desidero la spedizione
           </label>
-          {shippingDifferent && (
+          <p className="mt-2 text-xs text-muted">
+            La spedizione è facoltativa e comporta dei costi, che ti comunicheremo prima di confermare l&apos;ordine.
+            Senza spedizione puoi ritirare in showroom.
+          </p>
+          {shippingRequested && (
             <div className="mt-5 space-y-5">
-              <div>
-                <label className={label} htmlFor="shippingAddress">Indirizzo di spedizione (via e numero)</label>
-                <input required id="shippingAddress" name="shippingAddress" className={input} />
-              </div>
-              <div className="grid gap-5 sm:grid-cols-[1fr_2fr_1fr]">
-                <div>
-                  <label className={label} htmlFor="shippingZip">CAP</label>
-                  <input required id="shippingZip" name="shippingZip" inputMode="numeric" className={input} />
-                </div>
-                <div>
-                  <label className={label} htmlFor="shippingCity">Città</label>
-                  <input required id="shippingCity" name="shippingCity" className={input} />
-                </div>
-                <div>
-                  <label className={label} htmlFor="shippingProvince">Provincia</label>
-                  <input required id="shippingProvince" name="shippingProvince" maxLength={3} className={`${input} uppercase`} />
-                </div>
-              </div>
+              <label className="flex items-center gap-2 text-sm text-muted">
+                <input
+                  type="checkbox"
+                  checked={shippingDifferent}
+                  onChange={(e) => setShippingDifferent(e.target.checked)}
+                  className="h-4 w-4 accent-brass"
+                />
+                Spedisci a un indirizzo diverso da quello di fatturazione
+              </label>
+              {shippingDifferent && (
+                <>
+                  <div>
+                    <label className={label} htmlFor="shippingAddress">Indirizzo di spedizione (via e numero)</label>
+                    <input required id="shippingAddress" name="shippingAddress" className={input} />
+                  </div>
+                  <div className="grid gap-5 sm:grid-cols-[1fr_2fr_1fr]">
+                    <div>
+                      <label className={label} htmlFor="shippingZip">CAP</label>
+                      <input required id="shippingZip" name="shippingZip" inputMode="numeric" className={input} />
+                    </div>
+                    <div>
+                      <label className={label} htmlFor="shippingCity">Città</label>
+                      <input required id="shippingCity" name="shippingCity" className={input} />
+                    </div>
+                    <div>
+                      <label className={label} htmlFor="shippingProvince">Provincia</label>
+                      <input required id="shippingProvince" name="shippingProvince" maxLength={3} className={`${input} uppercase`} />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </fieldset>
 
         <div>
           <label className={label} htmlFor="notes">Note (opzionale)</label>
-          <textarea id="notes" name="notes" rows={3} className={input} placeholder="Es. preferisci il ritiro in showroom a Mondovì" />
+          <textarea id="notes" name="notes" rows={3} className={input} placeholder="Es. orari in cui sei raggiungibile" />
         </div>
 
         {/* Campo trappola anti-spam: nascosto agli utenti, i bot lo compilano */}

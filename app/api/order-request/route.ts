@@ -17,6 +17,7 @@ type Body = {
   zip?: string;
   city?: string;
   province?: string;
+  shippingRequested?: boolean;
   shippingDifferent?: boolean;
   shippingAddress?: string;
   shippingZip?: string;
@@ -49,7 +50,8 @@ export async function POST(req: NextRequest) {
     const zip = s(body.zip, 10);
     const city = s(body.city);
     const province = s(body.province, 3).toUpperCase();
-    const shippingDifferent = !!body.shippingDifferent;
+    const shippingRequested = !!body.shippingRequested;
+    const shippingDifferent = shippingRequested && !!body.shippingDifferent;
     const shippingAddress = s(body.shippingAddress);
     const shippingZip = s(body.shippingZip, 10);
     const shippingCity = s(body.shippingCity);
@@ -127,9 +129,11 @@ export async function POST(req: NextRequest) {
       .filter(Boolean)
       .join('\n');
 
-    const shippingText = shippingDifferent
-      ? `${shippingAddress}, ${shippingZip} ${shippingCity} (${shippingProvince})`
-      : 'Stesso indirizzo di fatturazione';
+    const shippingText = !shippingRequested
+      ? 'NON richiesta (ritiro in showroom)'
+      : shippingDifferent
+        ? `Richiesta (costi da comunicare) — ${shippingAddress}, ${shippingZip} ${shippingCity} (${shippingProvince})`
+        : 'Richiesta (costi da comunicare) — stesso indirizzo di fatturazione';
 
     const { Resend } = await import('resend');
     const resend = new Resend(apiKey);
@@ -180,6 +184,7 @@ export async function POST(req: NextRequest) {
           `Ciao ${customerType === 'azienda' && contactName ? contactName : name},`,
           '',
           'abbiamo ricevuto la tua richiesta d\'ordine. Ti ricontatteremo al più presto per confermare la disponibilità, la spedizione e il pagamento. Fino ad allora non è stato addebitato nulla.',
+          ...(shippingRequested ? ['', 'Hai richiesto la spedizione: i relativi costi saranno applicati e te li comunicheremo prima della conferma.'] : []),
           '',
           'Riepilogo:',
           linesText,
