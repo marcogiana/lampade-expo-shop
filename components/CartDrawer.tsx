@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useCart } from './CartContext';
 import { formatEuro } from '@/lib/format';
+import { PAYMENTS_ENABLED } from '@/lib/config';
 
 export default function CartDrawer() {
   const { items, isOpen, close, removeItem, setQty, total } = useCart();
@@ -93,19 +94,29 @@ export default function CartDrawer() {
               <span className="font-mono text-lg text-paper">{formatEuro(total)}</span>
             </div>
             {error && <p className="mb-3 text-xs text-ember">{error}</p>}
-            <button
-              onClick={handleCheckout}
-              disabled={loading}
-              className="w-full rounded-full bg-brass py-3 text-sm font-medium text-ink transition hover:bg-brass-bright disabled:opacity-60"
-            >
-              {loading ? 'Reindirizzamento…' : 'Vai al pagamento'}
-            </button>
+            {PAYMENTS_ENABLED ? (
+              <button
+                onClick={handleCheckout}
+                disabled={loading}
+                className="w-full rounded-full bg-brass py-3 text-sm font-medium text-ink transition hover:bg-brass-bright disabled:opacity-60"
+              >
+                {loading ? 'Reindirizzamento…' : 'Vai al pagamento'}
+              </button>
+            ) : (
+              <Link
+                href="/ordine/richiesta"
+                onClick={close}
+                className="block w-full rounded-full bg-brass py-3 text-center text-sm font-medium text-ink transition hover:bg-brass-bright"
+              >
+                Richiedi l&apos;ordine
+              </Link>
+            )}
             <Link
               href="/contatti"
               onClick={close}
               className="mt-3 block text-center text-xs text-muted hover:text-paper"
             >
-              Preferisci essere ricontattato prima di acquistare? Scrivici
+              Preferisci essere ricontattato prima? Scrivici
             </Link>
           </div>
         )}

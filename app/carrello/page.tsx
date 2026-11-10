@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useCart } from '@/components/CartContext';
 import { formatEuro } from '@/lib/format';
+import { PAYMENTS_ENABLED } from '@/lib/config';
 
 export default function CarrelloPage() {
   const { items, removeItem, setQty, total } = useCart();
@@ -85,18 +86,27 @@ export default function CarrelloPage() {
       {error && <p className="mt-4 text-sm text-ember">{error}</p>}
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <button
-          onClick={handleCheckout}
-          disabled={loading}
-          className="flex-1 rounded-full bg-brass py-3 text-sm font-medium text-ink transition hover:bg-brass-bright disabled:opacity-60"
-        >
-          {loading ? 'Reindirizzamento…' : 'Vai al pagamento'}
-        </button>
+        {PAYMENTS_ENABLED ? (
+          <button
+            onClick={handleCheckout}
+            disabled={loading}
+            className="flex-1 rounded-full bg-brass py-3 text-sm font-medium text-ink transition hover:bg-brass-bright disabled:opacity-60"
+          >
+            {loading ? 'Reindirizzamento…' : 'Vai al pagamento'}
+          </button>
+        ) : (
+          <Link
+            href="/ordine/richiesta"
+            className="flex-1 rounded-full bg-brass py-3 text-center text-sm font-medium text-ink transition hover:bg-brass-bright"
+          >
+            Richiedi l&apos;ordine
+          </Link>
+        )}
         <Link
           href="/contatti"
           className="flex-1 rounded-full border border-white/15 py-3 text-center text-sm text-paper transition hover:border-brass hover:text-brass"
         >
-          Contattaci prima di acquistare
+          Contattaci prima di ordinare
         </Link>
       </div>
     </main>
