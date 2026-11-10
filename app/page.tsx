@@ -24,7 +24,7 @@ export default async function HomePage() {
         />
         <div className="relative mx-auto max-w-6xl px-5 py-24 text-center">
           <h1 className="mx-auto max-w-3xl font-display text-4xl italic leading-tight text-paper sm:text-6xl">
-            Prodotti unici, un&apos;occasione irripetibile.
+            Un&apos;occasione unica.
           </h1>
           <div className="mx-auto mt-6 max-w-2xl space-y-3 text-sm text-muted sm:text-base">
             <p>
@@ -81,7 +81,8 @@ export default async function HomePage() {
       <section className="border-t border-white/10">
         <div className="mx-auto max-w-6xl px-5 py-16 text-center">
           <p className="mx-auto max-w-lg text-sm text-muted">
-            Disponibilità limitata, pezzi da magazzino e da showroom.</p>
+            Disponibilità limitata, pezzi da magazzino e da showroom.
+          </p>
         </div>
       </section>
     </main>
