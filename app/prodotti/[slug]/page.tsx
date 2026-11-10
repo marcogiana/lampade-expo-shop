@@ -57,11 +57,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
           </div>
           <p className="mt-1 text-xs text-muted">Prezzo IVA inclusa.</p>
 
-          <dl className="mt-8 grid grid-cols-3 gap-4 border-t border-white/10 pt-6 text-sm">
-            <div>
-              <dt className="text-muted">Codice</dt>
-              <dd className="font-mono text-paper">{product.code || '—'}</dd>
-            </div>
+          <dl className="mt-8 grid grid-cols-2 gap-4 border-t border-white/10 pt-6 text-sm">
             <div>
               <dt className="text-muted">Disponibilità</dt>
               <dd className="text-paper">
