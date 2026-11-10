@@ -174,8 +174,9 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
 
     const slug = slugify(`${brand}-${model}`);
 
-    const pctMatch = (discountPctRaw || '').match(/(\d+)\s*%/);
-    const discountPercent = pctMatch ? parseInt(pctMatch[1], 10) : null;
+    // la percentuale può avere decimali (es. "29,87%"): va letta intera, non solo le ultime cifre
+    const pctMatch = (discountPctRaw || '').match(/(\d+(?:[.,]\d+)?)\s*%/);
+    const discountPercent = pctMatch ? Math.round(parseFloat(pctMatch[1].replace(',', '.'))) : null;
     let listPrice = parseEuro(listInclStr);
     if (listPrice === null && discountPercent) {
       listPrice = Math.round(discountPrice / (1 - discountPercent / 100));
