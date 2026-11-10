@@ -67,16 +67,17 @@ function slugify(str: string): string {
     .replace(/(^-|-$)/g, '');
 }
 
-// Colonna J del foglio (indice 9, fissa indipendentemente dalla struttura delle
-// altre colonne): contiene i pezzi disponibili a magazzino per quella riga.
-const STOCK_COL_INDEX = 9;
-
+// Legge i pezzi disponibili dalla colonna "DISPONIBILITA'". Accetta sia un
+// numero semplice ("3") sia numero + unità ("17 PZ", "3PZ", "2 pz").
 function parseStock(raw: string | undefined): number | null {
   if (!raw) return null;
-  const trimmed = raw.trim();
-  if (!/^\d+$/.test(trimmed)) return null;
-  return parseInt(trimmed, 10);
+  const m = raw.trim().match(/^(\d+)\s*(?:pz\.?|pezzi|pezzo)?$/i);
+  if (!m) return null;
+  return parseInt(m[1], 10);
 }
+
+// Righe con stato incerto o non più disponibile: non vanno mostrate sul sito.
+const UNCERTAIN_RE = /\?|non\s+pi[uù]['’`]?\s+disponibil|non\s+disponibil|da valutare|credo/i;
 
 function parseEuro(s: string | undefined): number | null {
   if (!s) return null;
@@ -114,7 +115,7 @@ function normalizeImageUrl(url: string): string {
 export function parseTabToProducts(csv: string, category: string): Product[] {
   const rows = parseCsv(csv);
   const products: Product[] = [];
-  let cols: { code: number; avail: number; disc: number; listIncl: number; pct: number; img: number } | null = null;
+  let cols: { code: number; avail: number; disc: number; listIncl: number; pct: number; img: number; stock: number } | null = null;
 
   for (const cells of rows) {
     const trimmed = cells.map((c) => (c || '').trim());
@@ -127,6 +128,9 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
       const discIdx = upper.findIndex((c) => c.includes('SCONT'));
       const listInclIdx = upper.findIndex((c, i) => c.includes('IVA INCLUSA') && i !== discIdx && !c.includes('SCONT'));
       const imgIdx = upper.findIndex((c) => c.includes('LINK PRODOTTO'));
+      // La colonna dei pezzi si trova dall'intestazione: la posizione cambia tra
+      // le schede (es. colonna I in SOSP, J nelle altre).
+      const stockIdx = upper.findIndex((c) => c.includes('DISPONIBILITA') || c.includes('DISPONIBILITÀ'));
       cols = {
         code: 1,
         avail: 2,
@@ -134,6 +138,7 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
         listIncl: listInclIdx > -1 ? listInclIdx : 5,
         pct: (discIdx > -1 ? discIdx : 6) + 1,
         img: imgIdx,
+        stock: stockIdx,
       };
       continue;
     }
@@ -150,10 +155,14 @@ export function parseTabToProducts(csv: string, category: string): Product[] {
     const discountPctRaw = trimmed[cols.pct];
     const listInclStr = trimmed[cols.listIncl];
     const rawImg = cols.img > -1 ? trimmed[cols.img] : '';
-    const stock = parseStock(trimmed[STOCK_COL_INDEX]);
+    const stock = cols.stock > -1 ? parseStock(trimmed[cols.stock]) : null;
 
     const discountPrice = parseEuro(discountStr);
-    if (discountPrice === null) continue;
+    if (discountPrice === null || discountPrice <= 0) continue; // prezzo vuoto o 0 = non in vendita
+
+    // Nascondi i pezzi esauriti (0) e quelli con stato incerto/non disponibile
+    if (stock === 0) continue;
+    if (UNCERTAIN_RE.test(availability) || UNCERTAIN_RE.test(trimmed[cols.stock] || '')) continue;
 
     let brand = name;
     let model = name;
