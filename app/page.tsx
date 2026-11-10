@@ -24,7 +24,7 @@ export default async function HomePage() {
         />
         <div className="relative mx-auto max-w-6xl px-5 py-24 text-center">
           <h1 className="mx-auto max-w-3xl font-display text-4xl italic leading-tight text-paper sm:text-6xl">
-            L&apos;eccellenza del design d&apos;autore.
+            Prodotti unici, un&apos;occasione irripetibile.
           </h1>
           <div className="mx-auto mt-6 max-w-2xl space-y-3 text-sm text-muted sm:text-base">
             <p>
@@ -32,8 +32,8 @@ export default async function HomePage() {
               Studio Luce. Abbiamo raccolto l&apos;essenza della vera luce attraverso {brandCount} marchi prestigiosi,
               tra cui FLOS, Artemide, Catellani&amp;Smith, Foscarini e Luceplan.
             </p>
-            <p>Un solo esemplare disponibile per ogni modello, proposto a un prezzo eccezionale.</p>
-            <p className="text-paper">Un&apos;opportunità irripetibile, valida solo fino a esaurimento.</p>
+            <p>Per ogni modello ci sono pochi esemplari, in alcuni casi uno solo. Il prezzo è eccezionale.</p>
+            <p className="text-paper">Offerta valida solo fino a esaurimento.</p>
           </div>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
             <Link
@@ -80,10 +80,8 @@ export default async function HomePage() {
 
       <section className="border-t border-white/10">
         <div className="mx-auto max-w-6xl px-5 py-16 text-center">
-          <p className="font-display text-xl italic text-paper">Un pezzo, una sola vendita.</p>
-          <p className="mx-auto mt-3 max-w-lg text-sm text-muted">
-            Ogni lampada in questa vendita è un esemplare singolo da magazzino o da showroom: quando esaurisce, esce dal catalogo.
-          </p>
+          <p className="mx-auto max-w-lg text-sm text-muted">
+            Disponibilità limitata, pezzi da magazzino e da showroom.</p>
         </div>
       </section>
     </main>
