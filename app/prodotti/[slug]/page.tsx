@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getAllProducts, getProductBySlug } from '@/lib/products';
-import { formatEuro } from '@/lib/format';
+import { formatEuro, showDiscount, realDiscountPercent } from '@/lib/format';
 import AddToCartButton from '@/components/AddToCartButton';
 import ProductCard from '@/components/ProductCard';
 import ProductImage from '@/components/ProductImage';
@@ -45,13 +45,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
           <h1 className="mt-2 font-display text-3xl italic text-paper">{product.model}</h1>
 
           <div className="mt-5 flex items-center gap-3">
-            {product.listPrice && product.listPrice > product.price && (
+            {showDiscount(product) && product.listPrice && (
               <span className="font-mono text-base text-muted line-through">{formatEuro(product.listPrice)}</span>
             )}
             <span className="font-mono text-2xl text-paper">{formatEuro(product.price)}</span>
-            {product.discountPercent && (
+            {showDiscount(product) && (
               <span className="rounded-full bg-ember/15 px-2.5 py-1 font-mono text-xs text-ember">
-                −{product.discountPercent}%
+                −{realDiscountPercent(product)}%
               </span>
             )}
           </div>

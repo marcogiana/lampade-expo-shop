@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import type { Product } from '@/lib/products';
 import ProductCard from './ProductCard';
+import { realDiscountPercent } from '@/lib/format';
 
 type SortKey = 'sconto' | 'prezzo-asc' | 'prezzo-desc' | 'marca';
 
@@ -26,7 +27,7 @@ export default function CatalogGrid({ products }: { products: Product[] }) {
         list.sort((a, b) => a.brand.localeCompare(b.brand));
         break;
       default:
-        list.sort((a, b) => (b.discountPercent || 0) - (a.discountPercent || 0));
+        list.sort((a, b) => realDiscountPercent(b) - realDiscountPercent(a));
     }
     return list;
   }, [products, brand, sort]);

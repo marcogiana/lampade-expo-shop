@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { Product } from '@/lib/products';
-import { formatEuro } from '@/lib/format';
+import { formatEuro, showDiscount, realDiscountPercent } from '@/lib/format';
 import { useCart } from './CartContext';
 
 export default function ProductCard({ product }: { product: Product }) {
@@ -41,14 +41,14 @@ export default function ProductCard({ product }: { product: Product }) {
 
         <div className="mt-auto flex items-end justify-between pt-2">
           <div>
-            {product.listPrice && product.listPrice > product.price && (
+            {showDiscount(product) && product.listPrice && (
               <span className="mr-2 font-mono text-xs text-muted line-through">{formatEuro(product.listPrice)}</span>
             )}
             <span className="font-mono text-base text-paper">{formatEuro(product.price)}</span>
           </div>
-          {product.discountPercent && (
+          {showDiscount(product) && (
             <span className="rounded-full bg-ember/15 px-2 py-0.5 font-mono text-[11px] text-ember">
-              −{product.discountPercent}%
+              −{realDiscountPercent(product)}%
             </span>
           )}
         </div>
